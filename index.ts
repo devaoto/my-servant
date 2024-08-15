@@ -7,139 +7,7 @@ import {
 } from "discord.js";
 import fs from "fs";
 import path from "path";
-
-let emojis = [
-  "✌",
-  "😂",
-  "😝",
-  "😁",
-  "😱",
-  "👉",
-  "🙌",
-  "🍻",
-  "🔥",
-  "🌈",
-  "☀",
-  "🎈",
-  "🌹",
-  "💄",
-  "🎀",
-  "⚽",
-  "🎾",
-  "🏁",
-  "😡",
-  "👿",
-  "🐻",
-  "🐶",
-  "🐬",
-  "🐟",
-  "🍀",
-  "👀",
-  "🚗",
-  "🍎",
-  "💝",
-  "💙",
-  "👌",
-  "❤",
-  "😍",
-  "😉",
-  "😓",
-  "😳",
-  "💪",
-  "💩",
-  "🍸",
-  "🔑",
-  "💖",
-  "🌟",
-  "🎉",
-  "🌺",
-  "🎶",
-  "👠",
-  "🏈",
-  "⚾",
-  "🏆",
-  "👽",
-  "💀",
-  "🐵",
-  "🐮",
-  "🐩",
-  "🐎",
-  "💣",
-  "👃",
-  "👂",
-  "🍓",
-  "💘",
-  "💜",
-  "👊",
-  "💋",
-  "😘",
-  "😜",
-  "😵",
-  "🙏",
-  "👋",
-  "🚽",
-  "💃",
-  "💎",
-  "🚀",
-  "🌙",
-  "🎁",
-  "⛄",
-  "🌊",
-  "⛵",
-  "🏀",
-  "🎱",
-  "💰",
-  "👶",
-  "👸",
-  "🐰",
-  "🐷",
-  "🐍",
-  "🐫",
-  "🔫",
-  "👄",
-  "🚲",
-  "🍉",
-  "💛",
-  "💚",
-  "🕶️",
-  "😁",
-  "🎄",
-  "🎋",
-  "🎍",
-  "🎎",
-  "🧧",
-  "🎐",
-  "🎏",
-  "☹️",
-  "😈",
-  "🐶",
-  "🐸",
-  "🦏",
-  "🦎",
-  "🐙",
-  "🐳",
-  "🦅",
-  "👀",
-  "👨‍🦱",
-  "👨‍⚖️",
-  "👨‍🔬",
-  "🏅",
-  "🪇",
-  "🔬",
-  "🗿",
-  "💽",
-  "💶",
-  "📉",
-  "🍳",
-  "🥣",
-  "🥢",
-  "🌼",
-  "🚘",
-  "🛸",
-  "🕍",
-  "🐸",
-];
-
+import { roleMap } from "./roleMap";
 import { genderIdentities } from "./genders";
 
 const rolesFilePath = path.join(__dirname, "rolesMap.json");
@@ -246,33 +114,23 @@ async function sendMessagesOnChunk(arr: string[], message: Message) {
 
   for (const currentChunk of chunks) {
     let messageContent = "Choose a gender:\n\n";
-    const usedEmojis = new Set<string>();
 
-    for (const item of currentChunk) {
-      let randomEmojiObj;
-
-      do {
-        randomEmojiObj = emojis[Math.floor(Math.random() * emojis.length)];
-      } while (usedEmojis.has(randomEmojiObj));
-
-      usedEmojis.add(randomEmojiObj);
-      messageContent += !messageContent.includes(randomEmojiObj)
-        ? `${randomEmojiObj} - <@&${
-            cacheRole?.find((r) => r.name === item)?.id
-          }>\n`
-        : ` - <@&${cacheRole?.find((r) => r.name === item)?.id}>\n`;
-
-      rolesMap.set(randomEmojiObj, item);
+    for (const [emoji, roleName] of Object.entries(roleMap)) {
+      if (currentChunk.includes(roleName)) {
+        const roleId = cacheRole?.find((r) => r.name === roleName)?.id;
+        messageContent += `${emoji} - <@&${roleId}>\n`;
+        rolesMap.set(emoji, roleName);
+      }
     }
-
-    saveRolesMap();
 
     console.log(messageContent);
 
     const sentMessage = await channelToSend.send({ content: messageContent });
 
-    for (const emoji of usedEmojis) {
-      await sentMessage.react(emoji);
+    for (const emoji of Object.keys(roleMap)) {
+      if (currentChunk.includes(roleMap[emoji as keyof typeof roleMap])) {
+        await sentMessage.react(emoji);
+      }
     }
   }
 }
