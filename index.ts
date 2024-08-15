@@ -118,9 +118,13 @@ async function sendMessagesOnChunk(arr: string[], message: Message) {
       } while (usedEmojis.has(randomEmojiObj.emoji));
 
       usedEmojis.add(randomEmojiObj.emoji);
-      messageContent += `${randomEmojiObj.emoji} - <@&${
-        cacheRole?.find((r) => r.name === item)?.id
-      }>\n`;
+      messageContent += !emojis.includes(randomEmojiObj)
+        ? `${randomEmojiObj.emoji} - <@&${
+            cacheRole?.find((r) => r.name === item)?.id
+          }>\n`
+        : !cacheRole?.find((r) => r.name === item)
+        ? `- <@&${cacheRole?.find((r) => r.name === item)?.id}>\n`
+        : "";
       rolesMap.set(randomEmojiObj.emoji, item);
     }
 
