@@ -5,9 +5,140 @@ import {
   Guild,
   Message,
 } from "discord.js";
-import * as unicodeEmojis from "unicode-emoji";
 import fs from "fs";
 import path from "path";
+
+let emojis = [
+  "✌",
+  "😂",
+  "😝",
+  "😁",
+  "😱",
+  "👉",
+  "🙌",
+  "🍻",
+  "🔥",
+  "🌈",
+  "☀",
+  "🎈",
+  "🌹",
+  "💄",
+  "🎀",
+  "⚽",
+  "🎾",
+  "🏁",
+  "😡",
+  "👿",
+  "🐻",
+  "🐶",
+  "🐬",
+  "🐟",
+  "🍀",
+  "👀",
+  "🚗",
+  "🍎",
+  "💝",
+  "💙",
+  "👌",
+  "❤",
+  "😍",
+  "😉",
+  "😓",
+  "😳",
+  "💪",
+  "💩",
+  "🍸",
+  "🔑",
+  "💖",
+  "🌟",
+  "🎉",
+  "🌺",
+  "🎶",
+  "👠",
+  "🏈",
+  "⚾",
+  "🏆",
+  "👽",
+  "💀",
+  "🐵",
+  "🐮",
+  "🐩",
+  "🐎",
+  "💣",
+  "👃",
+  "👂",
+  "🍓",
+  "💘",
+  "💜",
+  "👊",
+  "💋",
+  "😘",
+  "😜",
+  "😵",
+  "🙏",
+  "👋",
+  "🚽",
+  "💃",
+  "💎",
+  "🚀",
+  "🌙",
+  "🎁",
+  "⛄",
+  "🌊",
+  "⛵",
+  "🏀",
+  "🎱",
+  "💰",
+  "👶",
+  "👸",
+  "🐰",
+  "🐷",
+  "🐍",
+  "🐫",
+  "🔫",
+  "👄",
+  "🚲",
+  "🍉",
+  "💛",
+  "💚",
+  "🕶️",
+  "😁",
+  "🎄",
+  "🎋",
+  "🎍",
+  "🎎",
+  "🧧",
+  "🎐",
+  "🎏",
+  "☹️",
+  "😈",
+  "🐶",
+  "🐸",
+  "🦏",
+  "🦎",
+  "🐙",
+  "🐳",
+  "🦅",
+  "👀",
+  "👨‍🦱",
+  "👨‍⚖️",
+  "👨‍🔬",
+  "🏅",
+  "🪇",
+  "🔬",
+  "🗿",
+  "💽",
+  "💶",
+  "📉",
+  "🍳",
+  "🥣",
+  "🥢",
+  "🌼",
+  "🚘",
+  "🛸",
+  "🕍",
+  "🐸",
+];
 
 import { genderIdentities } from "./genders";
 
@@ -100,35 +231,43 @@ function saveRolesMap(): void {
 
 loadRolesMap();
 
+function generateChunks2<T>(arr: T[], chunkSize: number): T[][] {
+  const result = [];
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    result.push(arr.slice(i, i + chunkSize));
+  }
+  return result;
+}
+
 async function sendMessagesOnChunk(arr: string[], message: Message) {
-  const chunks = generateChunks(arr, 10);
+  const chunks = generateChunks2(arr, 10);
   const channelToSend = message.channel;
   const cacheRole = message.guild?.roles.cache;
 
-  for (const chunk in chunks) {
+  for (const currentChunk of chunks) {
     let messageContent = "Choose a gender:\n\n";
-    const emojis = unicodeEmojis.getEmojis();
-    const currentChunk = chunks[chunk];
     const usedEmojis = new Set<string>();
 
     for (const item of currentChunk) {
       let randomEmojiObj;
+
       do {
         randomEmojiObj = emojis[Math.floor(Math.random() * emojis.length)];
-      } while (usedEmojis.has(randomEmojiObj.emoji));
+      } while (usedEmojis.has(randomEmojiObj));
 
-      usedEmojis.add(randomEmojiObj.emoji);
-      messageContent += !emojis.includes(randomEmojiObj)
-        ? `${randomEmojiObj.emoji} - <@&${
+      usedEmojis.add(randomEmojiObj);
+      messageContent += !messageContent.includes(randomEmojiObj)
+        ? `${randomEmojiObj} - <@&${
             cacheRole?.find((r) => r.name === item)?.id
           }>\n`
-        : !cacheRole?.find((r) => r.name === item)
-        ? `- <@&${cacheRole?.find((r) => r.name === item)?.id}>\n`
-        : "";
-      rolesMap.set(randomEmojiObj.emoji, item);
+        : ` - <@&${cacheRole?.find((r) => r.name === item)?.id}>\n`;
+
+      rolesMap.set(randomEmojiObj, item);
     }
 
     saveRolesMap();
+
+    console.log(messageContent);
 
     const sentMessage = await channelToSend.send({ content: messageContent });
 
