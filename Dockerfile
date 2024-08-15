@@ -1,17 +1,12 @@
 FROM oven/bun
 
-WORKDIR /app
+WORKDIR /bot
 
 COPY package.json .
-COPY bun.lockb .
+COPY .env .
+COPY . .
 
-RUN bun install --production
-
-COPY index.ts index.ts
-COPY tsconfig.json .
-COPY .env .env
+RUN bun install
 
 ENV NODE_ENV production
 CMD ["bun", "index.ts"]
-
-EXPOSE 3060

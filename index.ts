@@ -8,7 +8,6 @@ import {
 import * as unicodeEmojis from "unicode-emoji";
 import fs from "fs";
 import path from "path";
-import { Elysia } from "elysia";
 
 import { genderIdentities } from "./genders";
 
@@ -204,7 +203,3 @@ client.on("messageReactionRemove", async (reaction, user) => {
 });
 
 await client.login(process.env.BOT_TOKEN);
-
-new Elysia().get("/", (c) => "Hello, world").listen(3060);
-
-console.log("Elysia server started");
